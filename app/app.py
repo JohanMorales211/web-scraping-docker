@@ -1,14 +1,14 @@
-import os
-import requests
-import json
-from bs4 import BeautifulSoup
-from flask import Flask, jsonify
-
+# Crea la app de flask
 app = Flask(__name__)
 
+# URL base para scrappear
 URL_BASE = os.getenv('URL_BASE', 'https://www.farmatodo.com.co/categorias/salud-y-medicamentos')
 
+# Obtiene los productos de una página, por defecto la URL base
 def obtener_productos(url=URL_BASE):
+    """
+    Obtiene los productos de una página, por defecto la URL base
+    """
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
     productos = []
@@ -23,7 +23,11 @@ def obtener_productos(url=URL_BASE):
         })
     return productos
 
+# Obtiene la info de un producto
 def obtener_info_producto(url):
+    """
+    Obtiene la info de un producto
+    """
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
     info = {}
@@ -34,8 +38,12 @@ def obtener_info_producto(url):
     return info
 
 
+# Endpoint para obtener los productos
 @app.route('/productos', methods=['GET'])
 def productos():
+    """
+    Obtiene los productos de la página principal, y los almacena en un archivo JSON
+    """
     # Intenta cargar datos del archivo si existe
     try:
         with open('data/productos.json', 'r') as f:
@@ -63,4 +71,7 @@ def productos():
 
 
 if __name__ == "__main__":
+    """
+    Inicia la app en modo debug, y en el host y puerto 5000
+    """
     app.run(debug=True, host='0.0.0.0', port=5000)
