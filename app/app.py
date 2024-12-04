@@ -1,3 +1,9 @@
+import os
+import json
+import requests
+from flask import Flask, jsonify
+from bs4 import BeautifulSoup
+
 # Crea la app de flask
 app = Flask(__name__)
 
