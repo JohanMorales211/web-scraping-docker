@@ -1,17 +1,9 @@
 version: '3'
-# se define la lista de servicios
 services:
-  # el servicio scraper se encarga de ejecutar el scraper
   scraper:
-    # se construye a partir del Dockerfile en el directorio actual
     build: .
-    # se publica el puerto 5000 del contenedor en el puerto 5000 de la maquina
-    ports:
-      - "5000:5000"
-    # se definen variables de entorno para el contenedor
     environment:
-      # la URL desde la que se comienza a scrapear
       - URL_BASE=https://www.farmatodo.com.co/categorias/salud-y-medicamentos
-    # se monta el directorio actual en el contenedor en el directorio /app
     volumes:
-      - .:/app
+      - ./data:/app/data
+    command: ["python", "app/app.py"]
