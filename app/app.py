@@ -4,6 +4,7 @@ import os
 import csv
 import requests
 from bs4 import BeautifulSoup
+import logging
 
 # URL base para scrappear
 URL_BASE = os.getenv('URL_BASE', 'https://www.farmatodo.com.co/categorias/salud-y-medicamentos')
@@ -52,11 +53,16 @@ def main():
         combined = {**producto, **info}
         all_data.append(combined)
 
+    # Recopilar todas las claves únicas de todos los diccionarios
+    all_keys = set()
+    for data in all_data:
+        all_keys.update(data.keys())
+    fieldnames = list(all_keys)
+
     # Escribir en el archivo CSV
     if all_data:
-        keys = all_data[0].keys()
         with open('data/productos.csv', 'w', newline='', encoding='utf-8') as output_file:
-            dict_writer = csv.DictWriter(output_file, keys)
+            dict_writer = csv.DictWriter(output_file, fieldnames=fieldnames)
             dict_writer.writeheader()
             dict_writer.writerows(all_data)
 
