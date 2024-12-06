@@ -4,7 +4,7 @@ import os
 import csv
 import requests
 from bs4 import BeautifulSoup
-import logging
+import subprocess
 
 # URL base para scrappear
 URL_BASE = os.getenv('URL_BASE', 'https://www.farmatodo.com.co/categorias/salud-y-medicamentos')
@@ -37,6 +37,36 @@ def obtener_info_producto(url):
         info[title] = description
     return info
 
+def crear_tabla_sql_server():
+    create_table_query = """
+    CREATE TABLE Productos (
+        nombre NVARCHAR(255),
+        precio NVARCHAR(50),
+        enlace NVARCHAR(255),
+        -- Agrega más columnas según sea necesario
+    );
+    """
+    subprocess.run([
+        "sqlcmd",
+        "-S", "db",
+        "-U", "sa",
+        "-P", "YourStrong!Passw0rd",
+        "-Q", create_table_query
+    ])
+
+def cargar_datos_sql_server(csv_file_path):
+    subprocess.run([
+        "bcp",
+        "Productos",
+        "in", csv_file_path,
+        "-S", "db",
+        "-U", "sa",
+        "-P", "YourStrong!Passw0rd",
+        "-c",
+        "-t", ",",
+        "-F", "2"
+    ])
+
 def main():
     # Crear el directorio data si no existe
     if not os.path.exists('data'):
@@ -61,10 +91,17 @@ def main():
 
     # Escribir en el archivo CSV
     if all_data:
-        with open('data/productos.csv', 'w', newline='', encoding='utf-8') as output_file:
+        csv_file_path = 'data/productos.csv'
+        with open(csv_file_path, 'w', newline='', encoding='utf-8') as output_file:
             dict_writer = csv.DictWriter(output_file, fieldnames=fieldnames)
             dict_writer.writeheader()
             dict_writer.writerows(all_data)
+
+        # Crear la tabla en SQL Server
+        crear_tabla_sql_server()
+
+        # Cargar los datos en SQL Server
+        cargar_datos_sql_server(csv_file_path)
 
 if __name__ == "__main__":
     main()
