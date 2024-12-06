@@ -6,16 +6,21 @@ services:
       - URL_BASE=https://www.farmatodo.com.co/categorias/salud-y-medicamentos
     volumes:
       - ./data:/app/data
-      - ./data/db:/var/opt/mssql/data
+      - db_data:/var/opt/mssql/data
     depends_on:
       - db
 
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
+    user: root
     environment:
       - ACCEPT_EULA=Y
       - MSSQL_SA_PASSWORD=YourStrong!Passw0rd
+    volumes:
+      - db_data:/var/opt/mssql/data
+    command: bash -c "chown -R mssql:mssql /var/opt/mssql/data && /opt/mssql/bin/sqlservr"
     ports:
       - "1433:1433"
-    volumes:
-      - ./data/db:/var/opt/mssql/data
+
+volumes:
+  db_data:
