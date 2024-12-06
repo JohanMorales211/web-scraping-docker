@@ -31,10 +31,12 @@ def obtener_info_producto(url):
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
     info = {}
-    for item in soup.find('div', class_='data-sheet').find_all('div', class_='item'):
-        title = item.find('div', class_='title').get_text(strip=True).replace(":", "")
-        description = item.find('div', class_='description').get_text(strip=True)
-        info[title] = description
+    data_sheet = soup.find('div', class_='data-sheet')
+    if data_sheet is not None:
+        for item in data_sheet.find_all('div', class_='item'):
+            title = item.find('div', class_='title').get_text(strip=True).replace(":", "")
+            description = item.find('div', class_='description').get_text(strip=True)
+            info[title] = description
     return info
 
 def crear_tabla_sql_server():
@@ -42,30 +44,31 @@ def crear_tabla_sql_server():
     CREATE TABLE Productos (
         nombre NVARCHAR(255),
         precio NVARCHAR(50),
-        enlace NVARCHAR(255),
-        -- Agrega más columnas según sea necesario
+        enlace NVARCHAR(255)
     );
     """
     subprocess.run([
         "sqlcmd",
         "-S", "db",
         "-U", "sa",
-        "-P", "YourStrong!Passw0rd",
+        "-P", "YourStrongPassw0rd",
+        "-d", "master",
         "-Q", create_table_query
-    ])
+    ], check=True)
 
 def cargar_datos_sql_server(csv_file_path):
     subprocess.run([
         "bcp",
-        "Productos",
+        "master..Productos",
         "in", csv_file_path,
         "-S", "db",
         "-U", "sa",
-        "-P", "YourStrong!Passw0rd",
+        "-P", "YourStrongPassw0rd",
         "-c",
         "-t", ",",
         "-F", "2"
-    ])
+    ], check=True)
+
 
 def main():
     # Crear el directorio data si no existe
